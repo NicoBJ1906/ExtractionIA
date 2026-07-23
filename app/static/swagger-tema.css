@@ -3,13 +3,19 @@
    para que combine con la identidad del resto del proyecto (interfaz + propuesta). */
 
 :root{
+  /* Fija la página como "clara" en cualquier tema del sistema: evita que el
+     navegador pinte de gris oscuro el área de rebote del scroll en modo oscuro. */
+  color-scheme: light;
   --ib-ink:#182430; --ib-ink-soft:#5a6572;
   --ib-accent:#1e3f5f; --ib-accent-deep:#16304a;
   --ib-brass:#a87d3c; --ib-brass-tint:#f5eddc; --ib-brass-edge:#e7d6b4;
   --ib-bg:#eef0f3; --ib-rule:#e2e6ea;
 }
 
-body{ background:var(--ib-bg) !important; }
+/* El fondo va en html (no solo body) para que el área de sobre-scroll también
+   se pinte del gris claro, y overscroll-behavior evita el rebote elástico. */
+html{ background:var(--ib-bg) !important; }
+body{ background:var(--ib-bg) !important; overscroll-behavior-y:none; }
 
 .swagger-ui, .swagger-ui .opblock .opblock-summary-description,
 .swagger-ui table, .swagger-ui .parameter__name, .swagger-ui .response-col_status,
