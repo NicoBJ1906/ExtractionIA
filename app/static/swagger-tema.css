@@ -29,6 +29,10 @@ body{ background:var(--ib-bg) !important; }
 .swagger-ui .info .description{ color: var(--ib-ink-soft) !important; font-size:.95rem; }
 .swagger-ui .info .description p{ line-height:1.55; }
 
+/* Enlace crudo al archivo openapi.json bajo el título: ruido técnico, no aporta
+   nada a quien prueba el proyecto. */
+.swagger-ui .info .link, .swagger-ui .download-url-wrapper{ display:none !important; }
+
 .swagger-ui .scheme-container{
   background: transparent !important; box-shadow:none !important;
   border-bottom:1px solid var(--ib-rule);
