@@ -1,0 +1,85 @@
+/* Reestilizado puramente visual de la documentación interactiva (Swagger UI).
+   No modifica ningún comportamiento: solo colores, tipografía y espaciado,
+   para que combine con la identidad del resto del proyecto (interfaz + propuesta). */
+
+:root{
+  --ib-ink:#182430; --ib-ink-soft:#5a6572;
+  --ib-accent:#1e3f5f; --ib-accent-deep:#16304a;
+  --ib-brass:#a87d3c; --ib-brass-tint:#f5eddc; --ib-brass-edge:#e7d6b4;
+  --ib-bg:#eef0f3; --ib-rule:#e2e6ea;
+}
+
+body{ background:var(--ib-bg) !important; }
+
+.swagger-ui, .swagger-ui .opblock .opblock-summary-description,
+.swagger-ui table, .swagger-ui .parameter__name, .swagger-ui .response-col_status,
+.swagger-ui select, .swagger-ui input, .swagger-ui .btn, .swagger-ui label {
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif !important;
+}
+
+.swagger-ui .topbar{ display:none; }
+
+.swagger-ui .info{ margin:32px 0 20px; }
+.swagger-ui .info .title{
+  font-family: Georgia, "Iowan Old Style", serif !important;
+  color: var(--ib-ink) !important;
+  font-weight: 600 !important;
+  letter-spacing:-.01em;
+}
+.swagger-ui .info .description{ color: var(--ib-ink-soft) !important; font-size:.95rem; }
+.swagger-ui .info .description p{ line-height:1.55; }
+
+.swagger-ui .scheme-container{
+  background: transparent !important; box-shadow:none !important;
+  border-bottom:1px solid var(--ib-rule);
+}
+
+.swagger-ui .opblock-tag{
+  font-family: Georgia, serif !important; color: var(--ib-ink) !important;
+  border-bottom-color: var(--ib-rule) !important; font-size:1.15rem !important;
+}
+.swagger-ui .opblock-tag small{ font-family:"Segoe UI", sans-serif !important; color: var(--ib-ink-soft) !important; }
+
+.swagger-ui .opblock{
+  border-radius:8px !important; box-shadow:0 1px 2px rgba(20,30,45,.04) !important;
+  border-color: var(--ib-rule) !important;
+}
+.swagger-ui .opblock.opblock-post{ background: rgba(30,63,95,.04) !important; border-color: var(--ib-accent) !important; }
+.swagger-ui .opblock.opblock-post .opblock-summary-method{ background: var(--ib-accent) !important; }
+.swagger-ui .opblock.opblock-get{ background: rgba(168,125,60,.05) !important; border-color: var(--ib-brass-edge) !important; }
+.swagger-ui .opblock.opblock-get .opblock-summary-method{ background: var(--ib-brass) !important; }
+
+.swagger-ui .opblock-summary-path, .swagger-ui .opblock-summary-path__deprecated{ color: var(--ib-ink) !important; }
+.swagger-ui .opblock-summary-description{ color: var(--ib-ink-soft) !important; }
+
+.swagger-ui .btn.execute{
+  background-color: var(--ib-accent) !important; border-color: var(--ib-accent) !important;
+  border-radius:6px !important; font-weight:600 !important;
+}
+.swagger-ui .btn.execute:hover{ background-color: var(--ib-accent-deep) !important; }
+.swagger-ui .btn.try-out__btn{
+  color: var(--ib-accent) !important; border-color: var(--ib-accent) !important; border-radius:6px !important;
+}
+
+.swagger-ui .responses-inner h4, .swagger-ui .opblock-description-wrapper h4{
+  color: var(--ib-ink) !important;
+}
+
+.swagger-ui table thead tr th, .swagger-ui table thead tr td{
+  color: var(--ib-ink-soft) !important; border-bottom-color: var(--ib-rule) !important;
+}
+
+.swagger-ui select{ border-radius:6px !important; }
+
+.swagger-ui .model-title, .swagger-ui .model{ color: var(--ib-ink) !important; font-family:"Segoe UI", sans-serif !important; }
+.swagger-ui .model-box{
+  background: var(--ib-brass-tint) !important; border:1px solid var(--ib-brass-edge) !important;
+  border-radius:6px !important; padding:10px 14px !important;
+}
+.swagger-ui .prop-type{ color: var(--ib-accent) !important; font-weight:600 !important; }
+.swagger-ui .prop-format{ color: var(--ib-ink-soft) !important; }
+.swagger-ui span.model-title__text{ font-weight:700 !important; }
+.swagger-ui .parameter__name.required::after{ color:#a23328 !important; }
+.swagger-ui .response-col_description__inner div.markdown p{ color: var(--ib-ink-soft) !important; }
+
+.swagger-ui a.nostyle, .swagger-ui a{ color: var(--ib-accent) !important; }

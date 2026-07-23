@@ -41,14 +41,20 @@ python scripts/generar_muestra.py
 uvicorn app.main:app --reload
 ```
 
-En otra terminal:
+Luego abre en el navegador:
+
+```
+http://localhost:8000
+```
+
+Esa es la interfaz visual del proyecto: arrastra o selecciona el PDF de ejemplo (`samples/factura_ejemplo.pdf`), procésalo, y verás los datos extraídos junto con la decisión (aprobado o a revisión humana) y el historial de documentos procesados.
+
+También hay documentación técnica interactiva (Swagger) en `http://localhost:8000/docs`, y una alternativa por terminal:
 
 ```bash
 curl -F "file=@samples/factura_ejemplo.pdf" http://localhost:8000/extraer
 curl http://localhost:8000/documentos
 ```
-
-También hay documentación interactiva en `http://localhost:8000/docs`.
 
 ### Opcional: ver la extracción con Claude real
 Si quieres ver la etapa de IA usando un modelo real en vez del modo mock, exporta tu propia clave antes de levantar el servicio:

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<title>Extracción documental</title>
+<style>
+:root{
+  --ink:#182430; --ink-soft:#5a6572; --ink-faint:#8b96a3;
+  --accent:#1e3f5f; --accent-deep:#16304a;
+  --brass:#a87d3c; --brass-tint:#f5eddc; --brass-edge:#e7d6b4;
+  --bg:#eef0f3; --paper:#ffffff; --rule:#e2e6ea;
+  --good:#1f7a4d; --good-tint:#e6f4ec; --good-edge:#bfe3cf;
+  --warn:#a3620f; --warn-tint:#fbf0dd; --warn-edge:#f0d59f;
+  --err:#a23328; --err-tint:#fbeceb;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --mono: Consolas, "SFMono-Regular", ui-monospace, monospace;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(20,30,45,.04), 0 12px 32px -16px rgba(20,30,45,.22);
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+  line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:820px; margin:0 auto; padding:40px 24px 80px; }
+
+header.top{ margin-bottom:32px; padding-bottom:22px; border-bottom:2px solid var(--brass); }
+header.top .eyebrow{
+  font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.16em;
+  color:var(--brass); margin:0 0 10px;
+}
+header.top h1{
+  font-family:var(--serif); font-size:2rem; margin:0 0 8px; color:var(--ink);
+  letter-spacing:-.01em; text-wrap:balance;
+}
+header.top p{ margin:0; color:var(--ink-soft); font-size:.98rem; max-width:56ch; }
+header.top a{ color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+.card{
+  background:var(--paper); border:1px solid var(--rule); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:26px 28px; margin-bottom:24px;
+}
+.card h2{
+  font-family:var(--sans); font-size:.78rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--brass); margin:0 0 18px;
+}
+
+/* --- dropzone --- */
+.dropzone{
+  display:block; border:1.5px solid var(--rule); border-radius:8px; padding:34px 20px; text-align:center;
+  cursor:pointer; background:#fafbfc;
+  transition:border-color .15s ease, background-color .15s ease;
+}
+.dropzone:hover, .dropzone.arrastrando{ border-color:var(--accent); background:#f7f9fb; }
+.dropzone:focus-within{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(30,63,95,.15); }
+#input-archivo{ display:none; }
+.dropzone .icono{ font-size:1.8rem; margin-bottom:8px; }
+.dropzone .titulo{ font-weight:600; color:var(--ink); }
+.dropzone .sub{ font-size:.85rem; color:var(--ink-faint); margin-top:4px; }
+.dropzone .archivo-elegido{
+  margin-top:14px; font-size:.9rem; color:var(--accent-deep); font-weight:600;
+}
+
+.acciones{ display:flex; align-items:center; gap:14px; margin-top:20px; }
+button.primario{
+  font-family:var(--sans); font-size:.95rem; font-weight:600; color:#fff; background:var(--accent);
+  border:none; border-radius:6px; padding:11px 22px; cursor:pointer; transition:background-color .15s ease;
+}
+button.primario:hover:not(:disabled){ background:var(--accent-deep); }
+button.primario:disabled{ background:var(--ink-faint); cursor:not-allowed; }
+button.primario:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+.estado-envio{ font-size:.88rem; color:var(--ink-soft); display:flex; align-items:center; gap:8px; }
+.spinner{
+  width:14px; height:14px; border:2px solid var(--rule); border-top-color:var(--accent);
+  border-radius:50%; animation:girar .7s linear infinite; display:none;
+}
+.spinner.activo{ display:inline-block; }
+@media (prefers-reduced-motion: reduce){ .spinner{ animation:none; } }
+@keyframes girar{ to{ transform:rotate(360deg); } }
+
+.error-msg{
+  margin-top:16px; padding:12px 16px; background:var(--err-tint); color:var(--err);
+  border-radius:6px; font-size:.88rem; display:none;
+}
+.error-msg.visible{ display:block; }
+
+/* --- resultado --- */
+#resultado{ display:none; }
+#resultado.visible{ display:block; }
+
+.badge-decision{
+  display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.92rem;
+  padding:8px 16px; border-radius:20px; margin-bottom:20px;
+}
+.badge-decision.aprobado{ background:var(--good-tint); color:var(--good); border:1px solid var(--good-edge); }
+.badge-decision.revision{ background:var(--warn-tint); color:var(--warn); border:1px solid var(--warn-edge); }
+.badge-decision .punto{ width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+.motivo{ font-size:.9rem; color:var(--ink-soft); margin:0 0 22px; }
+
+.campos{ display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; margin-bottom:22px; }
+.campo .etiqueta{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); font-weight:600; margin-bottom:3px; }
+.campo .valor{ font-size:1rem; font-weight:600; color:var(--ink); }
+.campo .valor.mono{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+.confianza-fila{ margin-bottom:24px; }
+.confianza-barra{ height:8px; background:var(--rule); border-radius:4px; overflow:hidden; margin-top:6px; }
+.confianza-relleno{ height:100%; background:var(--accent); border-radius:4px; transition:width .4s ease; }
+
+table{ width:100%; border-collapse:collapse; font-size:.88rem; }
+th, td{ text-align:left; padding:9px 10px; border-bottom:1px solid var(--rule); }
+th{ font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-faint); font-weight:700; }
+td.num{ text-align:right; font-variant-numeric:tabular-nums; font-family:var(--mono); }
+tfoot td{ font-weight:700; border-bottom:none; border-top:2px solid var(--ink); padding-top:12px; }
+
+.modo-nota{
+  margin-top:20px; font-size:.8rem; color:var(--ink-faint); background:var(--brass-tint);
+  border:1px solid var(--brass-edge); border-radius:6px; padding:9px 13px;
+}
+
+/* --- historial --- */
+.historial-vacio{ color:var(--ink-faint); font-size:.9rem; }
+.pill-decision{
+  display:inline-block; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:12px;
+}
+.pill-decision.aprobado{ background:var(--good-tint); color:var(--good); }
+.pill-decision.revision{ background:var(--warn-tint); color:var(--warn); }
+
+footer.pie{ text-align:center; font-size:.82rem; color:var(--ink-faint); margin-top:8px; }
+footer.pie a{ color:var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">Prueba técnica · Extracción documental</p>
+    <h1>Extracción documental</h1>
+    <p>Sube una factura en PDF. El sistema extrae los datos y decide, con reglas fijas, si se aprueba sola o necesita revisión humana. <a href="/docs">Ver documentación técnica (API)</a></p>
+  </header>
+
+  <section class="card">
+    <h2>Paso 1 · Subir factura</h2>
+    <form id="form-subida">
+      <label class="dropzone" id="dropzone" for="input-archivo">
+        <div class="icono">📄</div>
+        <div class="titulo">Haz clic aquí o arrastra un PDF</div>
+        <div class="sub">Solo archivos .pdf</div>
+        <div class="archivo-elegido" id="nombre-archivo"></div>
+      </label>
+      <input type="file" id="input-archivo" accept="application/pdf,.pdf">
+
+      <div class="acciones">
+        <button type="submit" class="primario" id="boton-procesar" disabled>Procesar factura</button>
+        <span class="estado-envio"><span class="spinner" id="spinner"></span><span id="texto-estado"></span></span>
+      </div>
+      <div class="error-msg" id="mensaje-error"></div>
+    </form>
+  </section>
+
+  <section class="card" id="resultado">
+    <h2>Resultado</h2>
+    <div id="contenido-resultado"></div>
+  </section>
+
+  <section class="card">
+    <h2>Historial de documentos procesados</h2>
+    <div id="historial"><p class="historial-vacio">Cargando…</p></div>
+  </section>
+
+  <footer class="pie">MVP de extracción documental · <a href="/docs">documentación de la API</a></footer>
+</div>
+
+<script>
+const form = document.getElementById('form-subida');
+const inputArchivo = document.getElementById('input-archivo');
+const dropzone = document.getElementById('dropzone');
+const nombreArchivo = document.getElementById('nombre-archivo');
+const botonProcesar = document.getElementById('boton-procesar');
+const spinner = document.getElementById('spinner');
+const textoEstado = document.getElementById('texto-estado');
+const mensajeError = document.getElementById('mensaje-error');
+const resultado = document.getElementById('resultado');
+const contenidoResultado = document.getElementById('contenido-resultado');
+const historial = document.getElementById('historial');
+
+const formateador = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function moneda(valor) { return '$' + formateador.format(Number(valor)); }
+
+function actualizarNombreArchivo() {
+  const archivo = inputArchivo.files[0];
+  nombreArchivo.textContent = archivo ? archivo.name : '';
+  botonProcesar.disabled = !archivo;
+}
+inputArchivo.addEventListener('change', actualizarNombreArchivo);
+
+['dragover', 'dragenter'].forEach(evento => {
+  dropzone.addEventListener(evento, e => { e.preventDefault(); dropzone.classList.add('arrastrando'); });
+});
+['dragleave', 'drop'].forEach(evento => {
+  dropzone.addEventListener(evento, e => { e.preventDefault(); dropzone.classList.remove('arrastrando'); });
+});
+dropzone.addEventListener('drop', e => {
+  const archivo = e.dataTransfer.files[0];
+  if (archivo) {
+    inputArchivo.files = e.dataTransfer.files;
+    actualizarNombreArchivo();
+  }
+});
+
+function mostrarError(mensaje) {
+  mensajeError.textContent = mensaje;
+  mensajeError.classList.add('visible');
+}
+function limpiarError() {
+  mensajeError.textContent = '';
+  mensajeError.classList.remove('visible');
+}
+
+function renderizarResultado(datos) {
+  const aprobado = datos.decision === 'AUTO_APROBADO';
+  const f = datos.factura;
+  const filasLineas = f.lineas.map(l => `
+    <tr>
+      <td>${l.descripcion}</td>
+      <td class="num">${l.cantidad}</td>
+      <td class="num">${moneda(l.precio_unitario)}</td>
+      <td class="num">${moneda(Number(l.cantidad) * Number(l.precio_unitario))}</td>
+    </tr>
+  `).join('');
+
+  contenidoResultado.innerHTML = `
+    <span class="badge-decision ${aprobado ? 'aprobado' : 'revision'}">
+      <span class="punto"></span>
+      ${aprobado ? 'Aprobado automáticamente' : 'Necesita revisión humana'}
+    </span>
+    <p class="motivo">${datos.motivo}</p>
+
+    <div class="campos">
+      <div class="campo"><div class="etiqueta">NIT del proveedor</div><div class="valor mono">${f.proveedor_nit}</div></div>
+      <div class="campo"><div class="etiqueta">Fecha de emisión</div><div class="valor mono">${f.fecha_emision}</div></div>
+      <div class="campo"><div class="etiqueta">Total de la factura</div><div class="valor mono">${moneda(f.total)}</div></div>
+      <div class="campo"><div class="etiqueta">Número de documento</div><div class="valor mono">#${datos.documento_id}</div></div>
+    </div>
+
+    <div class="confianza-fila">
+      <div class="etiqueta" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);font-weight:600;">
+        Confianza de la extracción — ${Math.round(f.confianza * 100)}%
+      </div>
+      <div class="confianza-barra"><div class="confianza-relleno" style="width:${f.confianza * 100}%"></div></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Descripción</th><th style="text-align:right">Cantidad</th><th style="text-align:right">Precio unitario</th><th style="text-align:right">Subtotal</th></tr></thead>
+      <tbody>${filasLineas || '<tr><td colspan="4" style="color:var(--ink-faint)">No se extrajeron líneas de detalle</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3">Total</td><td class="num">${moneda(f.total)}</td></tr></tfoot>
+    </table>
+
+    <div class="modo-nota">
+      ${datos.modo === 'mock'
+        ? 'Extraído en modo simulado (sin IA, sin costo). Para ver la extracción con Claude real, define tu propia clave ANTHROPIC_API_KEY antes de levantar el servicio.'
+        : 'Extraído con Claude real.'}
+    </div>
+  `;
+  resultado.classList.add('visible');
+}
+
+async function cargarHistorial() {
+  try {
+    const respuesta = await fetch('/documentos');
+    const documentos = await respuesta.json();
+    if (!documentos.length) {
+      historial.innerHTML = '<p class="historial-vacio">Todavía no se ha procesado ningún documento.</p>';
+      return;
+    }
+    const filas = documentos.map(d => {
+      const aprobado = d.decision === 'AUTO_APROBADO';
+      const fecha = new Date(d.creado_en).toLocaleString('es-CO');
+      return `
+        <tr>
+          <td>#${d.id}</td>
+          <td>${d.nombre_archivo}</td>
+          <td><span class="pill-decision ${aprobado ? 'aprobado' : 'revision'}">${aprobado ? 'Aprobado' : 'A revisión'}</span></td>
+          <td style="color:var(--ink-faint)">${d.modo}</td>
+          <td style="color:var(--ink-faint)">${fecha}</td>
+        </tr>`;
+    }).join('');
+    historial.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Archivo</th><th>Decisión</th><th>Modo</th><th>Fecha</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>`;
+  } catch (e) {
+    historial.innerHTML = '<p class="historial-vacio">No se pudo cargar el historial.</p>';
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  limpiarError();
+  const archivo = inputArchivo.files[0];
+  if (!archivo) return;
+
+  botonProcesar.disabled = true;
+  spinner.classList.add('activo');
+  textoEstado.textContent = 'Procesando…';
+
+  const datosFormulario = new FormData();
+  datosFormulario.append('file', archivo);
+
+  try {
+    const respuesta = await fetch('/extraer', { method: 'POST', body: datosFormulario });
+    if (!respuesta.ok) {
+      const detalle = await respuesta.json().catch(() => null);
+      throw new Error(detalle?.detail || `Error del servidor (${respuesta.status})`);
+    }
+    const datos = await respuesta.json();
+    renderizarResultado(datos);
+    await cargarHistorial();
+  } catch (error) {
+    mostrarError(error.message || 'Ocurrió un error al procesar el documento.');
+  } finally {
+    spinner.classList.remove('activo');
+    textoEstado.textContent = '';
+    botonProcesar.disabled = false;
+  }
+});
+
+cargarHistorial();
+</script>
+</body>
+</html>

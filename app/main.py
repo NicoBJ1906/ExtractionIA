@@ -11,11 +11,17 @@ la toma siempre validation.decidir().
 """
 import io
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import extractor, ocr, storage, validation
 from app.schema import ResultadoExtraccion
+
+DIR_ESTATICOS = Path(__file__).resolve().parent / "static"
 
 TAGS_METADATA = [
     {
@@ -46,7 +52,40 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     openapi_tags=TAGS_METADATA,
+    docs_url=None,  # se reemplaza por una versión con tema propio, ver /docs abajo
 )
+
+app.mount("/static", StaticFiles(directory=str(DIR_ESTATICOS)), name="static")
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def interfaz():
+    """Interfaz visual del proyecto: subir una factura y ver el resultado."""
+    return (DIR_ESTATICOS / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/docs", include_in_schema=False)
+def documentacion():
+    """Misma documentación interactiva de siempre (Swagger UI), con un tema
+    visual propio superpuesto — no cambia ningún comportamiento, solo estilos."""
+    respuesta = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} — Documentación",
+        swagger_favicon_url="/static/favicon.svg",
+        swagger_ui_parameters={
+            # Muestra el ejemplo con datos ya rellenos en vez del esquema abstracto
+            "defaultModelRendering": "example",
+            # Oculta el bloque técnico "Schemas" del final (redundante, solo ruido visual)
+            "defaultModelsExpandDepth": -1,
+            "docExpansion": "list",
+            "displayRequestDuration": True,
+        },
+    )
+    html = respuesta.body.decode("utf-8").replace(
+        "</head>",
+        '<link rel="stylesheet" href="/static/swagger-tema.css"></head>',
+    )
+    return HTMLResponse(html)
 
 
 @app.get(
