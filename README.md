@@ -4,6 +4,8 @@ Implementación funcional del caso de uso prioritario de la propuesta técnica a
 
 Este proyecto es la puesta en escena de la Opción A (MVP low-cost) descrita en el documento — un solo servicio, sin colas ni bases de datos gestionadas, pensado para instalarse y probarse en minutos.
 
+> 📋 **¿Primera vez viendo este proyecto?** Sigue [`MANUAL_DE_PRUEBA.md`](MANUAL_DE_PRUEBA.md) — instrucciones paso a paso, sin asumir experiencia previa.
+
 ## Arquitectura
 
 ```
